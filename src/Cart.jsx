@@ -1,11 +1,41 @@
+import axios from "axios";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Cart({ cart }) {
+function Cart({ cart, setCart }) {
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const total = cart.reduce((sum, item) => {
     return item.discountedPrice + sum;
   }, 0);
+
+  function handleQuantityChange(id, quantity, factor) {
+    setIsLoading(true);
+    axios
+      .put("https://dummyjson.com/carts/1", {
+        products: [
+          {
+            id: id,
+            quantity: `${quantity + factor < 1 ? 1 : quantity + factor}`,
+          },
+        ],
+      })
+      .then((data) => {
+        const newCart = cart.map((item) => {
+          return item.id === id ? data.data.products[0] : item;
+        });
+        setCart(newCart);
+      })
+      .catch((error) => console.log(error))
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
+
+  function handleDeleteItem(id) {
+    console.log(id);
+  }
 
   return (
     <>
@@ -26,15 +56,16 @@ function Cart({ cart }) {
           </thead>
           <tbody>
             {cart.map((item) => (
-              <CartItem key={item.id} item={item} />
+              <CartItem
+                key={item.id}
+                item={item}
+                handleDeleteItem={handleDeleteItem}
+                handleQuantityChange={handleQuantityChange}
+                isLoading={isLoading}
+              />
             ))}
           </tbody>
           <tfoot>
-            <tr className="visible-xs">
-              <td className="text-center">
-                <strong>Total $ 5.11</strong>
-              </td>
-            </tr>
             <tr>
               <td>
                 <a
@@ -63,7 +94,7 @@ function Cart({ cart }) {
   );
 }
 
-function CartItem({ item }) {
+function CartItem({ item, handleQuantityChange, handleDeleteItem, isLoading }) {
   return (
     <tr>
       <td data-th="Product">
@@ -79,20 +110,42 @@ function CartItem({ item }) {
       </td>
       <td data-th="Price">${item.price}</td>
       <td data-th="Quantity" className="flex">
-        <button>-</button>
-        <input
-          type="number"
-          className="quantity form-control text-center"
-          value={item.quantity}
-          disabled
-        ></input>
-        <button>+</button>
+        <button
+          onClick={() => {
+            handleQuantityChange(item.id, item.quantity, -1);
+          }}
+        >
+          -
+        </button>
+        {isLoading ? (
+          " Loading.... "
+        ) : (
+          <input
+            type="number"
+            className="quantity form-control text-center"
+            value={item.quantity}
+            disabled
+          ></input>
+        )}
+
+        <button
+          onClick={() => {
+            handleQuantityChange(item.id, item.quantity, 1);
+          }}
+        >
+          +
+        </button>
       </td>
       <td data-th="Subtotal" className="text-center">
         $ {item.discountedPrice}
       </td>
       <td className="actions" data-th="">
-        <button className="btn btn-danger btn-sm">
+        <button
+          className="btn btn-danger btn-sm"
+          onClick={() => {
+            handleDeleteItem(item.id);
+          }}
+        >
           <i className="fa fa-trash-o"></i>
         </button>
       </td>

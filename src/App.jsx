@@ -14,10 +14,7 @@ function App({ products, cart, setProducts, setCart }) {
   }, [setProducts]);
 
   function handleAddtoCart(id) {
-    console.log(id);
-    console.log(cart);
     const duplicateItem = cart.find((item) => {
-      console.log(item);
       return item.id === id;
     });
 
@@ -32,12 +29,9 @@ function App({ products, cart, setProducts, setCart }) {
           ],
         })
         .then((data) => {
-          console.log(data);
           const newCart = cart.map((item) => {
             return item.id === duplicateItem.id ? data.data.products[0] : item;
           });
-
-          console.log("newCart", newCart);
           setCart(newCart);
         })
         .catch((error) => console.log(error));
