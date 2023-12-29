@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import "./App.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function App({ products, cart, setProducts, setCart }) {
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
   useEffect(() => {
     axios
@@ -14,6 +16,7 @@ function App({ products, cart, setProducts, setCart }) {
   }, [setProducts]);
 
   function handleAddtoCart(id) {
+    setIsLoading(true);
     const duplicateItem = cart.find((item) => {
       return item.id === id;
     });
@@ -34,7 +37,10 @@ function App({ products, cart, setProducts, setCart }) {
           });
           setCart(newCart);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => console.log(error))
+        .finally(() => {
+          setIsLoading(false);
+        });
     } else {
       axios
         .post("https://dummyjson.com/carts/add", {
@@ -47,14 +53,18 @@ function App({ products, cart, setProducts, setCart }) {
           ],
         })
         .then((data) => setCart((prev) => [...prev, data.data.products[0]]))
-        .catch((error) => console.log(error));
+        .catch((error) => console.log(error))
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }
   return (
     <>
       <h1>terobaje ko bazar 🖕🏼</h1>
       <div className="sticky-cart" onClick={() => navigate("/cart")}>
-        <i className="fa fa-shopping-cart"></i> ({cart.length})
+        {isLoading ? "Adding.." : <i className="fa fa-shopping-cart"></i>} (
+        {cart.length})
       </div>
       <div className="product-container">
         <div className="container">
@@ -64,6 +74,7 @@ function App({ products, cart, setProducts, setCart }) {
                 key={product.id}
                 product={product}
                 handleAddtoCart={handleAddtoCart}
+                isLoading={isLoading}
               />
             ))}
           </div>
@@ -76,7 +87,7 @@ function App({ products, cart, setProducts, setCart }) {
 function Product(props) {
   const { id, title, description, price, brand, thumbnail, rating, category } =
     props.product;
-  const { handleAddtoCart } = props;
+  const { handleAddtoCart, isLoading } = props;
   return (
     <div className="col-sm-4">
       <div className="product-card">
@@ -84,7 +95,13 @@ function Product(props) {
           <img className="img-responsive" src={thumbnail} />
         </div>
         <div className="card-content">
-          <div className="send" onClick={() => handleAddtoCart(id)}>
+          <div
+            className="send"
+            onClick={() => {
+              if (isLoading) return;
+              handleAddtoCart(id);
+            }}
+          >
             <i className="fa fa-cart-plus"></i>
           </div>
           <h1 className="card-title">{title}</h1>

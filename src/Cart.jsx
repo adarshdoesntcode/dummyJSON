@@ -47,7 +47,10 @@ function Cart({ cart, setCart }) {
             <tr>
               <th style={{ width: "50%" }}>Product</th>
               <th style={{ width: "10%" }}>Price</th>
-              <th style={{ width: "8%" }}>Quantity</th>
+              <th style={{ width: "8%" }}>
+                {" "}
+                {isLoading ? "loading..." : "Quantity"}
+              </th>
               <th style={{ width: "22%" }} className="text-center">
                 Subtotal
               </th>
@@ -117,16 +120,13 @@ function CartItem({ item, handleQuantityChange, handleDeleteItem, isLoading }) {
         >
           -
         </button>
-        {isLoading ? (
-          " Loading.... "
-        ) : (
-          <input
-            type="number"
-            className="quantity form-control text-center"
-            value={item.quantity}
-            disabled
-          ></input>
-        )}
+
+        <input
+          type="number"
+          className="quantity form-control text-center"
+          value={item.quantity}
+          disabled
+        ></input>
 
         <button
           onClick={() => {
