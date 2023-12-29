@@ -34,7 +34,8 @@ function Cart({ cart, setCart }) {
   }
 
   function handleDeleteItem(id) {
-    console.log(id);
+    const filteredCart = cart.filter((item) => item.id !== id);
+    setCart(filteredCart);
   }
 
   return (
